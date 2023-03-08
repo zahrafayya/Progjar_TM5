@@ -39,11 +39,12 @@ def input_name():
     s.send(to_send.encode())
 
 def welcome():  
+    global name
     print("\n-- Welcome to the program, "+name+"! --")
     print("Please enter commands below to start:")
     print("/list - show all online users with their IP and port")
     print("/chat - enter the general chatroom")
-    print("/group create - create a new group chat")
+    print("/group create <group name> - create a new group chat")
     print("/group list - show all available group")
     print("/group join <group ID> - join group based on ID")
     print("/private <receiver ID> <message> - to send a private message")
@@ -52,17 +53,25 @@ def welcome():
     cmd = input()
     if cmd == "/chat": 
         chat()
-    if cmd == "/list":
+    elif cmd.startswith("/list"):
         s.send(cmd.encode())
         message = s.recv(1024).decode()
-        print("\n" + message)
-
+        print(message)
         welcome()
-    if cmd.startswith("/private"):
+    elif cmd.startswith("/private"):
         s.send(cmd.encode())
         message = s.recv(1024).decode()
         print("\n" + message)
-
+        welcome()
+    elif cmd.startswith("/group create"):
+        s.send(cmd.encode())
+        message = s.recv(1024).decode()
+        print("\n" + message)
+        welcome()
+    elif cmd.startswith("/group list"):
+        s.send(cmd.encode())
+        message = s.recv(1024).decode()
+        print("\n" + message)
         welcome()
 
 def listen_for_messages():
@@ -71,6 +80,11 @@ def listen_for_messages():
         print("\n" + message)
 
 def chat():
+    t = Thread(target=listen_for_messages)
+    # make the thread daemon so it ends whenever the main thread ends
+    t.daemon = True
+    # start the thread
+    t.start()
     print("\n-- Welcome to the chatroom! --")
     print("Enter q to quit")
     while True:
@@ -78,6 +92,7 @@ def chat():
         to_send =  input()
         # a way to exit the program
         if to_send.lower() == 'q':
+            t.stop()
             welcome()
         # add the datetime, name & the color of the sender
         date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
@@ -89,11 +104,6 @@ def chat():
     s.close()
 
 # make a thread that listens for messages to this client & print them
-t = Thread(target=listen_for_messages)
-# make the thread daemon so it ends whenever the main thread ends
-t.daemon = True
-# start the thread
-t.start()
 
 input_name()
 welcome()

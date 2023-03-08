@@ -68,6 +68,11 @@ def listen_for_messages():
         print("\n" + message)
 
 def chat():
+    t = Thread(target=listen_for_messages)
+    # make the thread daemon so it ends whenever the main thread ends
+    t.daemon = True
+    # start the thread
+    t.start()
     print("\n-- Welcome to the chatroom! --")
     print("Enter q to quit")
     while True:
@@ -75,6 +80,7 @@ def chat():
         to_send =  input()
         # a way to exit the program
         if to_send.lower() == 'q':
+            t.stop()
             welcome()
         # add the datetime, name & the color of the sender
         date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
@@ -86,12 +92,8 @@ def chat():
     s.close()
 
 # make a thread that listens for messages to this client & print them
-t = Thread(target=listen_for_messages)
-# make the thread daemon so it ends whenever the main thread ends
-t.daemon = True
-# start the thread
-t.start()
 
 input_name()
 welcome()
+
 

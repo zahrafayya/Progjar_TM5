@@ -22,7 +22,7 @@ def private_msg(cs, args):
 
 
 def ask_list(cs):
-    to_send = ''
+    to_send = '/'
     for client_socket in client_sockets:
         str = f"[+] Online user: {client_socket.id} {client_socket.name}\n"
         to_send += str

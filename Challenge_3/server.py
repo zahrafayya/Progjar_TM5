@@ -5,7 +5,33 @@ import threading
 from datetime import datetime
 
 client_sockets = set()
+groups = set()
+
 id = 1
+group_id = 1
+
+def create_group(cs, name):
+    global group_id
+    g = Group() # kurang args
+    g.name = name
+    g.member.append(cs)
+    g.id = group_id
+    groups.add(g)
+    group_id += 1
+
+    str = f"[+] Group ID: {g.id} Group Name: {g.name}\n"
+    print(str)
+
+    to_send = f"A new group named {name} is successfully created."
+    cs.client.send(to_send.encode())
+
+def show_group(cs):
+    to_send = ''
+    for group in groups:
+        str = f"[+] Group ID: {group.id} Group Name: {group.name}\n"
+        to_send += str
+    
+    cs.client.send(to_send.encode())
 
 def private_msg(cs, args):
     receiver = cs
@@ -54,12 +80,23 @@ def listen_for_client(cs):
                 raw = msg.replace('/private ', '')
                 args = raw.split()
                 private_msg(cs, args)
+            elif msg.startswith("/group create"):
+                name = msg.replace('/group create ', '')
+                create_group(cs, name)
+            elif msg.startswith("/group list"):
+                show_group(cs)
             else:
                 msg = msg.replace(separator_token, ": ")
                 # iterate over all connected sockets
                 for client_socket in client_sockets:
                     # and send the message
                     client_socket.client.send(msg.encode())
+
+class Group:
+    def __init__(self):
+        self.id = ''
+        self.name = ''
+        self.member = []
 
 class Server:
     def __init__(self):
