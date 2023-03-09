@@ -4,6 +4,12 @@ from threading import Thread
 from datetime import datetime
 from colorama import Fore, init, Back
 
+class Group:
+    def __init__(self):
+        self.id = ''
+        self.name = ''
+        self.member = []
+
 # init colors
 init()
 
@@ -43,7 +49,6 @@ def welcome():
     print("\n-- Welcome to the program, "+name+"! --")
     print("Please enter commands below to start:")
     print("/list - show all online users with their IP and port")
-    print("/chat - enter the general chatroom")
     print("/group create <group name> - create a new group chat")
     print("/group list - show all available group")
     print("/group join <group ID> - join group based on ID")
@@ -63,12 +68,14 @@ def welcome():
         message = s.recv(1024).decode()
         print("\n" + message)
         welcome()
-    elif cmd.startswith("/group create"):
+    elif cmd.startswith("/group join"):
         s.send(cmd.encode())
         message = s.recv(1024).decode()
-        print("\n" + message)
-        welcome()
-    elif cmd.startswith("/group list"):
+        tok = message.split('~')
+        print("\n" + tok[0])
+        print("Group ID: "+str(tok[1]))
+        chat(int(tok[1]))
+    elif cmd.startswith("/group"):
         s.send(cmd.encode())
         message = s.recv(1024).decode()
         print("\n" + message)
@@ -79,7 +86,7 @@ def listen_for_messages():
         message = s.recv(1024).decode()
         print("\n" + message)
 
-def chat():
+def chat(group_id):
     t = Thread(target=listen_for_messages)
     # make the thread daemon so it ends whenever the main thread ends
     t.daemon = True
@@ -96,7 +103,7 @@ def chat():
             welcome()
         # add the datetime, name & the color of the sender
         date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-        to_send = f"{client_color}[{date_now}] {name}{separator_token}{to_send}{Fore.RESET}"
+        to_send = f"{group_id}~{client_color}[{date_now}] {name}{separator_token}{to_send}{Fore.RESET}"
         # finally, send the message
         s.send(to_send.encode())
 
